@@ -1,0 +1,150 @@
+{% extends 'master.html' %}
+
+{% block content %}
+<div class="container-fluid">
+    <div class="row">
+        <!-- Sidebar -->
+        <nav id="sidebar" class="col-md-3 col-lg-2 d-md-block bg-light sidebar">
+            <div class="position-sticky pt-3">
+                <div class="text-center mb-4">
+                    <h4>{{ member.user.get_full_name }}</h4>
+                    <p class="text-muted">Member ID: {{ member.member_id }}</p>
+                </div>
+                <ul class="nav flex-column">
+                    <li class="nav-item">
+                        <a class="nav-link active" href="#">
+                            <i class="bi bi-speedometer2"></i> Dashboard
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="#">
+                            <i class="bi bi-cash-stack"></i> Make Deposit
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="#">
+                            <i class="bi bi-wallet2"></i> Withdraw Funds
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="#">
+                            <i class="bi bi-clock-history"></i> Transaction History
+                        </a>
+                    </li>
+                </ul>
+            </div>
+        </nav>
+
+        <!-- Main Content -->
+        <main class="col-md-9 ms-sm-auto col-lg-10 px-md-4">
+            <div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
+                <h1 class="h2">Savings Dashboard</h1>
+                <div class="btn-toolbar mb-2 mb-md-0">
+                    <div class="btn-group me-2">
+                        <button type="button" class="btn btn-sm btn-outline-secondary">Print Statement</button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Summary Cards -->
+            <div class="row mb-4">
+                <div class="col-md-4">
+                    <div class="card text-white bg-primary mb-3">
+                        <div class="card-body">
+                            <h5 class="card-title">Total Savings</h5>
+                            <h2 class="card-text">${{ total_savings|floatformat:2 }}</h2>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <div class="card text-white bg-success mb-3">
+                        <div class="card-body">
+                            <h5 class="card-title">Active Accounts</h5>
+                            <h2 class="card-text">{{ accounts.count }}</h2>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <div class="card text-white bg-info mb-3">
+                        <div class="card-body">
+                            <h5 class="card-title">Member Since</h5>
+                            <h2 class="card-text">{{ member.join_date|date:"M Y" }}</h2>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Accounts Section -->
+            <div class="card mb-4">
+                <div class="card-header">
+                    <h5>My Savings Accounts</h5>
+                </div>
+                <div class="card-body">
+                    <div class="table-responsive">
+                        <table class="table table-hover">
+                            <thead>
+                                <tr>
+                                    <th>Account Number</th>
+                                    <th>Account Type</th>
+                                    <th>Balance</th>
+                                    <th>Interest Rate</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for account in accounts %}
+                                <tr>
+                                    <td>{{ account.account_number }}</td>
+                                    <td>{{ account.get_account_type_display }}</td>
+                                    <td>${{ account.current_balance|floatformat:2 }}</td>
+                                    <td>{{ account.interest_rate }}%</td>
+                                    <td>
+                                        <a href="{{ account.get_absolute_url }}" class="btn btn-sm btn-outline-primary">
+                                            View
+                                        </a>
+                                    </td>
+                                </tr>
+                                {% empty %}
+                                <tr>
+                                    <td colspan="5" class="text-center">No accounts found</td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Recent Transactions -->
+            <div class="card">
+                <div class="card-header">
+                    <h5>Recent Transactions</h5>
+                </div>
+                <div class="card-body">
+                    {% if recent_transactions %}
+                    <div class="list-group">
+                        {% for transaction in recent_transactions %}
+                        <div class="list-group-item">
+                            <div class="d-flex w-100 justify-content-between">
+                                <h6 class="mb-1">{{ transaction.description|default:"No description" }}</h6>
+                                <span class="{% if transaction.transaction_type == 'DEP' %}text-success{% else %}text-danger{% endif %}">
+                                    ${{ transaction.amount|floatformat:2 }}
+                                </span>
+                            </div>
+                            <small class="text-muted">
+                                {{ transaction.created_at|date:"M d, Y H:i" }} • 
+                                {{ transaction.get_transaction_type_display }} • 
+                                {{ transaction.account.account_number }}
+                            </small>
+                        </div>
+                        {% endfor %}
+                    </div>
+                    {% else %}
+                    <p class="text-muted">No recent transactions</p>
+                    {% endif %}
+                </div>
+            </div>
+        </main>
+    </div>
+</div>
+{% endblock %}
